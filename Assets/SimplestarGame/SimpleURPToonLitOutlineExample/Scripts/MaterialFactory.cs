@@ -109,28 +109,10 @@ namespace VRMShaders
                 throw new Exception("no shader name");
             }
 
-            // Set URP Shader Name
-            shaderName = "SimpleURPToonLitOutlineExample";
-            if (matDesc.RenderQueue.HasValue)
-            {
-                if ((int)UnityEngine.Rendering.RenderQueue.Transparent <= matDesc.RenderQueue.Value)
-                {
-                    shaderName = "Shader Graphs/SimpleURPTransparent";
-                }
-            }
-
-            var shader = Shader.Find(shaderName);
-            if (shader == null)
-            {
-                throw new Exception($"shader: {shaderName} not found");
-            }
-
-            material = new Material(shader);
-            material.name = matDesc.SubAssetKey.Name;
-
             bool hasShadeMap = false;
             bool useEmission = false;
             Texture baseMap = null;
+            Dictionary<string, Texture> textures = new Dictionary<string, Texture>();
             foreach (var kv in matDesc.TextureSlots)
             {
                 var texture = await getTexture(kv.Value, awaitCaller);
@@ -150,7 +132,7 @@ namespace VRMShaders
                         {
                             useEmission = true;
                         }
-                        material.SetTexture(key, texture);
+                        textures[key] = texture;
                     }
                 }
                 else
@@ -162,9 +144,31 @@ namespace VRMShaders
                         {
                             useEmission = true;
                         }
-                        material.SetTexture(key, texture);
                     }
                 }
+            }
+
+            // Set URP Shader Name
+            shaderName = "SimpleURPToonLitOutlineExample";
+            if (matDesc.RenderQueue.HasValue)
+            {
+                if (!useEmission && (int)UnityEngine.Rendering.RenderQueue.Transparent <= matDesc.RenderQueue.Value)
+                {
+                    shaderName = "Shader Graphs/SimpleURPTransparent";
+                }
+            }
+
+            var shader = Shader.Find(shaderName);
+            if (shader == null)
+            {
+                throw new Exception($"shader: {shaderName} not found");
+            }
+
+            material = new Material(shader);
+            material.name = matDesc.SubAssetKey.Name;
+            foreach (var keyValue in textures)
+            {
+                material.SetTexture(keyValue.Key, keyValue.Value);
             }
 
             foreach (var kv in matDesc.Vectors)
