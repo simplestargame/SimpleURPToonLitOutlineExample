@@ -17,7 +17,7 @@ Unity 2021.2.8f1 with URP or later.
 3. Replace "\Assets\VRMShaders\GLTF\IO\Runtime\Material\Importer\MaterialFactory.cs"(UniVRM) with "\Assets\SimplestarGame\SimpleURPToonLitOutlineExample\Scripts\MaterialFactory.cs"(This Package).
 
 ## Base Code
-The base shader code is from [Unity URP Simplified Toon Lit Shader Example (for you to learn writing custom lit shader in URP)](https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample)
+The base shader code is [Unity URP Simplified Toon Lit Shader Example (for you to learn writing custom lit shader in URP)](https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample)
 
 ## Unity-Technologies Custom Lighting Shader Graph
 This package uses [ShaderGraph-Custom-Lighting](https://github.com/Unity-Technologies/ShaderGraph-Custom-Lighting)
