@@ -5,6 +5,14 @@
 #ifndef SimpleURPToonLitOutlineExample_Shared_Include
 #define SimpleURPToonLitOutlineExample_Shared_Include
 
+#ifndef _MAIN_LIGHT_SHADOWS
+#define _MAIN_LIGHT_SHADOWS
+#endif
+
+#ifndef _ADDITIONAL_LIGHTS
+#define _ADDITIONAL_LIGHTS
+#endif
+
 // We don't have "UnityCG.cginc" in SRP/URP's package anymore, so:
 // Including the following two function is enough for shading with Universal Pipeline. Everything is included in them.
 // Core.hlsl will include SRP shader library, all constant buffers not related to materials (perobject, percamera, perframe).
@@ -211,9 +219,7 @@ Varyings VertexShaderWork(Attributes input, VertexShaderWorkSetting setting)
     if(setting.applyShadowBiasFixToHClipPos)
     {
         //see GetShadowPositionHClip() in URP/Shaders/ShadowCasterPass.hlsl 
-        float3 positionWS = vertexInput.positionWS;
-        float3 normalWS = vertexNormalInput.normalWS;
-        float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, _LightDirection));
+        float4 positionCS = TransformWorldToHClip(vertexInput.positionWS - max(0, input.positionOS.y) * _LightDirection);
 
         #if UNITY_REVERSED_Z
         positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
@@ -368,6 +374,7 @@ half4 ShadeFinalColor(Varyings input, bool isOutline)
 
 #ifdef _MAIN_LIGHT_SHADOWS
     lightingData.shadowCoord = input.shadowCoord;
+    half shadowAttenutation = MainLightRealtimeShadow(input.shadowCoord);
 #endif
  
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -385,6 +392,10 @@ half4 ShadeFinalColor(Varyings input, bool isOutline)
     {
         color = ConvertSurfaceColorToOutlineColor(color);
     }
+
+#ifdef _MAIN_LIGHT_SHADOWS
+    color = lerp(color, _IndirectLightConstColor * _IndirectLightMultiplier * surfaceData.shade, (1.0 - shadowAttenutation) * _ReceiveShadowMappingAmount);
+#endif
 
     // fog
     half fogFactor = input.positionWSAndFogFactor.w;
