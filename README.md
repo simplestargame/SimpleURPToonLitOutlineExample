@@ -11,7 +11,7 @@ Cast and recieve shadows
 Unity URP (Universal Render Pipeline) Toon Lit Shader for UniVRM Runtime Load.
 
 ## Environment
-Unity 2021.2.8f1 with URP or later.
+Unity 2021.3.0f1 with URP or later.
 
 ## How to use
 
