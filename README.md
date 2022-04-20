@@ -2,6 +2,9 @@
 ![image](https://user-images.githubusercontent.com/20289559/151178653-4e27ddb3-24cb-4ecf-b207-35709d203b23.png)
 Test VRM from https://codealdnoah.booth.pm/
 
+![castAndRecieveShadow](https://user-images.githubusercontent.com/20289559/164125018-c7bc1ab7-97ba-4a91-9c14-842da64de09b.jpg)
+
+
 <!-- ![image](https://user-images.githubusercontent.com/20289559/151182615-79250fcc-526f-4a03-851e-5d71515ea968.png) -->
 
 ## What is this ?
