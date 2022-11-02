@@ -219,7 +219,9 @@ Varyings VertexShaderWork(Attributes input, VertexShaderWorkSetting setting)
     if(setting.applyShadowBiasFixToHClipPos)
     {
         //see GetShadowPositionHClip() in URP/Shaders/ShadowCasterPass.hlsl 
-        float4 positionCS = TransformWorldToHClip(vertexInput.positionWS - max(0, input.positionOS.y) * _LightDirection);
+        float3 positionWS = vertexInput.positionWS;
+        float3 normalWS = vertexNormalInput.normalWS;
+        float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS - max(0, input.positionOS.y) * _LightDirection, normalWS, _LightDirection));
 
         #if UNITY_REVERSED_Z
         positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);

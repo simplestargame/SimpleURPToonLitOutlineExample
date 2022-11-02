@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -11,10 +12,12 @@ namespace VRMShaders
     public class MaterialFactory : IResponsibilityForDestroyObjects
     {
         private readonly IReadOnlyDictionary<SubAssetKey, Material> m_externalMap;
+        private readonly IReadOnlyDictionary<string, string> m_fallbackShaders;
 
-        public MaterialFactory(IReadOnlyDictionary<SubAssetKey, Material> externalMaterialMap)
+        public MaterialFactory(IReadOnlyDictionary<SubAssetKey, Material> externalMaterialMap, IReadOnlyDictionary<string, string> fallbackShaders)
         {
             m_externalMap = externalMaterialMap;
+            m_fallbackShaders = fallbackShaders;
         }
 
         public struct MaterialLoadInfo
@@ -55,7 +58,7 @@ namespace VRMShaders
 #if VRM_DEVELOP
                     // Debug.Log($"Destroy {x.Asset}");
 #endif
-                    UnityObjectDestoyer.DestroyRuntimeOrEditor(x.Asset);
+                    UnityObjectDestroyer.DestroyRuntimeOrEditor(x.Asset);
                 }
             }
         }
@@ -108,6 +111,11 @@ namespace VRMShaders
             {
                 throw new Exception("no shader name");
             }
+            if (m_fallbackShaders.TryGetValue(shaderName, out string fallback))
+            {
+                Debug.LogWarning($"fallback: {shaderName} => {fallback}");
+                shaderName = fallback;
+            }
 
             bool hasShadeMap = false;
             bool useEmission = false;
@@ -134,10 +142,13 @@ namespace VRMShaders
                         }
                         textures[key] = texture;
                     }
+                    else
+                    {
+                        MonoBehaviour.Destroy(texture);
+                    }
                 }
                 else
                 {
-                    // 存在するテクスチャはそのまま適用
                     if (this.TryGetMaterialParamKey(kv.Key, out string key, out float scale))
                     {
                         if ("_EmissionMap" == key)
@@ -230,11 +241,6 @@ namespace VRMShaders
                 }
             }
 
-            foreach (var action in matDesc.Actions)
-            {
-                action(material);
-            }
-
             if (matDesc.RenderQueue.HasValue)
             {
                 material.renderQueue = matDesc.RenderQueue.Value;
@@ -275,6 +281,9 @@ namespace VRMShaders
                     keyOut = "_ShadeColor";
                     break;
                 case "_ShadeTexture":
+                    keyOut = "_ShadeMap";
+                    break;
+                case "_ShadeTex":
                     keyOut = "_ShadeMap";
                     break;
                 case "_EmissionColor":
