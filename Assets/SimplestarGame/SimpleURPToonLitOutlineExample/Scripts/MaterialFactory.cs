@@ -12,12 +12,10 @@ namespace VRMShaders
     public class MaterialFactory : IResponsibilityForDestroyObjects
     {
         private readonly IReadOnlyDictionary<SubAssetKey, Material> m_externalMap;
-        private readonly IReadOnlyDictionary<string, string> m_fallbackShaders;
 
-        public MaterialFactory(IReadOnlyDictionary<SubAssetKey, Material> externalMaterialMap, IReadOnlyDictionary<string, string> fallbackShaders)
+        public MaterialFactory(IReadOnlyDictionary<SubAssetKey, Material> externalMaterialMap)
         {
             m_externalMap = externalMaterialMap;
-            m_fallbackShaders = fallbackShaders;
         }
 
         public struct MaterialLoadInfo
@@ -55,9 +53,6 @@ namespace VRMShaders
                 if (!x.UseExternal)
                 {
                     // 外部の '.asset' からロードしていない
-#if VRM_DEVELOP
-                    // Debug.Log($"Destroy {x.Asset}");
-#endif
                     UnityObjectDestroyer.DestroyRuntimeOrEditor(x.Asset);
                 }
             }
@@ -106,15 +101,9 @@ namespace VRMShaders
                 getTexture = (x, y) => Task.FromResult<Texture>(null);
             }
 
-            var shaderName = matDesc.ShaderName;
-            if (String.IsNullOrEmpty(shaderName))
+            if (matDesc.Shader == null)
             {
-                throw new Exception("no shader name");
-            }
-            if (m_fallbackShaders.TryGetValue(shaderName, out string fallback))
-            {
-                Debug.LogWarning($"fallback: {shaderName} => {fallback}");
-                shaderName = fallback;
+                throw new ArgumentNullException(nameof(matDesc.Shader));
             }
 
             bool hasShadeMap = false;
@@ -160,7 +149,7 @@ namespace VRMShaders
             }
 
             // Set URP Shader Name
-            shaderName = "SimpleURPToonLitOutlineExample";
+            var shaderName = "SimpleURPToonLitOutlineExample";
             if (matDesc.RenderQueue.HasValue)
             {
                 if (!useEmission && (int)UnityEngine.Rendering.RenderQueue.Transparent <= matDesc.RenderQueue.Value)
@@ -174,7 +163,6 @@ namespace VRMShaders
             {
                 throw new Exception($"shader: {shaderName} not found");
             }
-
             material = new Material(shader);
             material.name = matDesc.SubAssetKey.Name;
             foreach (var keyValue in textures)
